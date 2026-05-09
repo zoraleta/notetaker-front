@@ -2,7 +2,7 @@
 
 Фронтенд для notetaker (тестовое задание Mediacube). React-приложение с AI-интерфейсом.
 
-**Бэк — микросервисный**, разнесён по нескольким Cloudflare Workers (см. `notetaker-back/CLAUDE.md`). **Фронт ходит ТОЛЬКО на `notetaker-api-gateway`** — единственный публично-доступный воркер. Адреса остальных воркеров фронту неизвестны и не должны попадать в код.
+**Бэк — микросервисный**, разнесён по нескольким Cloudflare Workers (см. `notetaker-back/CLAUDE.md`). **Фронт ходит ТОЛЬКО на `api-gateway`** — единственный публично-доступный воркер. Адреса остальных воркеров фронту неизвестны и не должны попадать в код.
 
 ---
 
@@ -50,7 +50,7 @@
 - **Server state & fetching:** TanStack Query (React Query)
 - **Forms:** React Hook Form + Zod
 - **HTTP:** axios или ky (один клиент в `lib/http.ts`)
-- **Деплой:** **Cloudflare Pages** через `wrangler pages deploy dist` (или Git-интеграция в Cloudflare dashboard). Бэкенд — несколько Cloudflare Workers, фронт ходит на `notetaker-api-gateway`.
+- **Деплой:** **Cloudflare Pages** через `wrangler pages deploy dist` (или Git-интеграция в Cloudflare dashboard). Бэкенд — несколько Cloudflare Workers, фронт ходит на `api-gateway`.
 
 ---
 
@@ -180,7 +180,7 @@ features/notes/editor/
 2. **Slash-команды (`/`)** — открывают Shadcn `Command`. Пункты делятся на группы: «Блоки» (Heading 1, Heading 2, Bullet list, …) и «AI» (Саммари, Обсудить — иконка `Sparkles`).
 3. **Floating menu** — Shadcn `popover` или встроенный Tiptap `BubbleMenu` с нашими `Button`-ами. Команды: **Bold**, **Italic**, **Link**, опционально `Sparkles` → инлайн-AI.
 4. **Placeholder:** `«Нажмите '/' для команд или начните писать...»` — через extension `@tiptap/extension-placeholder`.
-5. **AI-команды редактора** идут через TanStack Query mutation → `api-gateway` → `notetaker-ai`. Результат вставляется в редактор (для саммари — отдельный AI-блок с `Sparkles` + `bg-muted`; для «обсудить» — открытие Sheet, см. `features/ai-chat/`).
+5. **AI-команды редактора** идут через TanStack Query mutation → `api-gateway` → `ai`. Результат вставляется в редактор (для саммари — отдельный AI-блок с `Sparkles` + `bg-muted`; для «обсудить» — открытие Sheet, см. `features/ai-chat/`).
 6. **Стилизация контента** — через Tailwind классы на узлах (`prose prose-sm` от `@tailwindcss/typography` допустим, но без декоративных украшений). Без cursor-glow, без моргающего курсора.
 
 ### Зависимости (фиксируем при первой установке)
@@ -274,13 +274,13 @@ npx shadcn add <c>   # добавить Shadcn-компонент
 
 ```
 # .env.local (dev)
-VITE_API_URL=http://localhost:8787   # локальный wrangler dev для notetaker-api-gateway
+VITE_API_URL=http://localhost:8787   # локальный wrangler dev для api-gateway
 
 # Production
 VITE_API_URL=https://notetaker-api-gateway.<account>.workers.dev
 ```
 
-`VITE_API_URL` всегда указывает на **api-gateway**. Адресов internal-воркеров (`notetaker-ai`, `notetaker-notes`, …) на фронте быть не должно — они недоступны извне.
+`VITE_API_URL` всегда указывает на **api-gateway**. Адресов internal-воркеров (`ai`, `notes`, …) на фронте быть не должно — они недоступны извне.
 
 В Pages-проекте production-значения задаются:
 - через `[vars]` в `wrangler.toml` (если деплой через `wrangler pages deploy`)

@@ -421,4 +421,4 @@ feat(scope): краткое описание
 11. **Градиенты/glow/sparkle-эффекты/постоянные анимации** — запрещены, см. «Дизайн-принципы» в `CLAUDE.md`
 12. **Кастомные иконки для AI-функций** — везде только `Sparkles` из `lucide-react`
 13. **Готовые UI-пакеты поверх Tiptap** (`novel`, `*-with-ui`) — мы headless, slash-меню на Shadcn `Command`
-14. **Прямой `fetch` на адрес internal-воркера** — фронт ходит ТОЛЬКО на `notetaker-api-gateway` через `lib/http.ts`
+14. **Прямой `fetch` на адрес internal-воркера** — фронт ходит ТОЛЬКО на `api-gateway` через `lib/http.ts`
