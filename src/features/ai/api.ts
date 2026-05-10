@@ -73,3 +73,14 @@ export function discussNote(
     signal,
   })
 }
+
+export function formatForNote(
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  signal?: AbortSignal,
+): Promise<Response> {
+  return authFetch('/ai/format-for-note', {
+    method: 'POST',
+    body: JSON.stringify({ messages }),
+    signal,
+  })
+}

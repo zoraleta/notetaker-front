@@ -4,6 +4,7 @@ import { editorExtensions } from './extensions'
 import { FloatingToolbar } from './floating-menu'
 import { SlashMenu } from './slash-menu/slash-menu'
 import { UrlSummaryDialog } from './url-summary-dialog'
+import { markdownToTiptapJson } from '@/lib/markdown-to-tiptap'
 import { cn } from '@/lib/utils'
 
 interface EditorUpdate {
@@ -19,6 +20,7 @@ interface NoteEditorProps {
 
 export interface NoteEditorHandle {
   setContent: (text: string) => void
+  appendMarkdown: (markdown: string) => void
 }
 
 export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(
@@ -55,6 +57,13 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(
       if (!editor) return
       editor.commands.setContent(text)
       onChange({ contentJson: editor.getJSON() as Record<string, unknown>, contentText: editor.getText() })
+    },
+    appendMarkdown: (markdown: string) => {
+      if (!editor) return
+      const json = markdownToTiptapJson(markdown)
+      const nodes = (json.content as unknown[]) ?? []
+      const pos = editor.state.doc.content.size - 1
+      editor.commands.insertContentAt(pos, [{ type: 'horizontalRule' }, ...nodes] as Parameters<typeof editor.commands.insertContentAt>[1])
     },
   }), [editor, onChange])
 

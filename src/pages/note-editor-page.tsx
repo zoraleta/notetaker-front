@@ -138,7 +138,12 @@ function NoteEditorPageInner({ id }: { id: string }) {
         <SimilarNotes noteId={id} onMergeComplete={handleMergeComplete} />
       </aside>
 
-      <DiscussSheet note={note} open={discussOpen} onOpenChange={setDiscussOpen} />
+      <DiscussSheet
+        note={note}
+        open={discussOpen}
+        onOpenChange={setDiscussOpen}
+        onAddToNote={(markdown) => editorRef.current?.appendMarkdown(markdown)}
+      />
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="max-w-sm">
