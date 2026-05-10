@@ -1,10 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchProjects, deleteProject, createProjectFromPack, projectsKeys } from '../api'
+import { fetchProjects, fetchProject, deleteProject, createProjectFromPack, projectsKeys } from '../api'
 
 export function useProjects() {
   return useQuery({
     queryKey: projectsKeys.lists(),
     queryFn: fetchProjects,
+  })
+}
+
+export function useProject(id: string) {
+  return useQuery({
+    queryKey: projectsKeys.detail(id),
+    queryFn: () => fetchProject(id),
   })
 }
 

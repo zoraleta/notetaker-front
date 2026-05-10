@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Send, Square, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { discussNote, packIntoProject } from '@/features/ai/api'
-import { useCreateProjectFromPack } from '@/features/projects/hooks/use-projects'
+import { discussNote, packIntoProject, type ProjectPack } from '@/features/ai/api'
+import { PackProjectDialog } from './pack-project-dialog'
 import type { Note } from '@/features/notes/schema'
 
 interface Message {
@@ -26,8 +27,9 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const createProject = useCreateProjectFromPack()
   const [packing, setPacking] = useState(false)
+  const [packResult, setPackResult] = useState<ProjectPack | null>(null)
+  const [showPackDialog, setShowPackDialog] = useState(false)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -113,17 +115,26 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
       )
       const dialog = [noteContext, ...dialogLines].join('\n\n')
       const pack = await packIntoProject(dialog)
-      await createProject.mutateAsync({
-        name: pack.goal,
-        pack: { goal: pack.goal, stages: pack.stages, openQuestions: pack.openQuestions },
-        sourceNoteIds: [note.id],
-      })
+      setPackResult(pack)
+      setShowPackDialog(true)
+    } catch {
+      toast.error('Не удалось сгенерировать структуру проекта')
     } finally {
       setPacking(false)
     }
   }
 
   return (
+    <>
+    {packResult && (
+      <PackProjectDialog
+        pack={packResult}
+        noteId={note.id}
+        open={showPackDialog}
+        onOpenChange={setShowPackDialog}
+        onSuccess={() => onOpenChange(false)}
+      />
+    )}
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col sm:max-w-md" side="right">
         <SheetHeader>
@@ -162,7 +173,7 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
             size="sm"
             className="w-full gap-2"
             onClick={handlePack}
-            disabled={packing || createProject.isPending}
+            disabled={packing || isStreaming}
           >
             {packing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Упаковать в проект
@@ -188,5 +199,6 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
         </div>
       </SheetContent>
     </Sheet>
+    </>
   )
 }

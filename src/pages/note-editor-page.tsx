@@ -73,7 +73,7 @@ function NoteEditorPageInner({ id }: { id: string }) {
     <div className="flex h-full min-h-0">
       <div className="flex flex-1 flex-col min-h-0">
         <div className="shrink-0 flex items-center gap-2 px-6 py-3 border-b">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} aria-label="Назад">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Назад">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
