@@ -9,7 +9,6 @@ import { ALLOWED_MODELS } from '@/features/settings/schema'
 const PROMPT_DESCRIPTIONS: Record<string, string> = {
   summarize: 'Краткое резюме заметки или статьи с ключевыми тезисами.',
   discuss: 'Диалог об идее пользователя с опорой на контекст из других его заметок.',
-  'pack-into-project': 'По итогам диалога формирует структуру проекта: цель, этапы, открытые вопросы.',
 }
 
 export function SettingsPage() {

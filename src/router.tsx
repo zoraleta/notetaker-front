@@ -4,7 +4,6 @@ import { LoginPage } from '@/pages/login-page'
 import { RegisterPage } from '@/pages/register-page'
 import { DashboardPage } from '@/pages/dashboard-page'
 import { NoteEditorPage } from '@/pages/note-editor-page'
-import { ProjectPage } from '@/pages/project-page'
 import { SettingsPage } from '@/pages/settings-page'
 import { GraphPage } from '@/pages/graph-page'
 import { GroupsPage } from '@/pages/groups-page'
@@ -39,7 +38,6 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'notes/:id', element: <NoteEditorPage /> },
-      { path: 'projects/:id', element: <ProjectPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'graph', element: <GraphPage /> },
       { path: 'groups', element: <GroupsPage /> },

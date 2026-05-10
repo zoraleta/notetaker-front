@@ -1,13 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles, Send, Square, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Skeleton } from '@/components/ui/skeleton'
-import { discussNote, packIntoProject, type ProjectPack } from '@/features/ai/api'
-import { PackProjectDialog } from './pack-project-dialog'
+import { discussNote } from '@/features/ai/api'
+import { MarkdownText } from './markdown-text'
 import type { Note } from '@/features/notes/schema'
 
 interface Message {
@@ -27,9 +24,7 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
   const [isStreaming, setIsStreaming] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [packing, setPacking] = useState(false)
-  const [packResult, setPackResult] = useState<ProjectPack | null>(null)
-  const [showPackDialog, setShowPackDialog] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -37,10 +32,20 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
     }
   }, [messages])
 
+  function resizeTextarea() {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
   async function handleSend() {
     if (!input.trim() || isStreaming) return
     const userMsg = input.trim()
     setInput('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
     const updatedMessages: Message[] = [...messages, { role: 'user', content: userMsg }]
     setMessages([...updatedMessages, { role: 'assistant', content: '' }])
     setIsStreaming(true)
@@ -106,35 +111,7 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
     abortRef.current?.abort()
   }
 
-  async function handlePack() {
-    setPacking(true)
-    try {
-      const noteContext = `Заметка: "${note.title}"\n${note.contentText}`
-      const dialogLines = messages.map((m) =>
-        `${m.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${m.content}`,
-      )
-      const dialog = [noteContext, ...dialogLines].join('\n\n')
-      const pack = await packIntoProject(dialog)
-      setPackResult(pack)
-      setShowPackDialog(true)
-    } catch {
-      toast.error('Не удалось сгенерировать структуру проекта')
-    } finally {
-      setPacking(false)
-    }
-  }
-
   return (
-    <>
-    {packResult && (
-      <PackProjectDialog
-        pack={packResult}
-        noteId={note.id}
-        open={showPackDialog}
-        onOpenChange={setShowPackDialog}
-        onSuccess={() => onOpenChange(false)}
-      />
-    )}
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col sm:max-w-md" side="right">
         <SheetHeader>
@@ -159,7 +136,9 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
                   </span>
                 ) : (
                   <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
-                    {msg.content || <Skeleton className="h-4 w-40" />}
+                    {msg.content
+                      ? <MarkdownText content={msg.content} />
+                      : <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                   </div>
                 )}
               </div>
@@ -167,24 +146,26 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
           </div>
         </ScrollArea>
 
-        <div className="space-y-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2"
-            onClick={handlePack}
-            disabled={packing || isStreaming}
-          >
-            {packing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Упаковать в проект
-          </Button>
-          <div className="flex gap-2">
-            <Input
+        <div className="pt-2">
+          <div className="flex items-end gap-2">
+            <textarea
+              ref={textareaRef}
+              rows={1}
               placeholder="Напишите сообщение..."
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                setInput(e.target.value)
+                resizeTextarea()
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
               disabled={isStreaming}
+              className="flex-1 resize-none overflow-y-auto rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ maxHeight: '160px' }}
             />
             {isStreaming ? (
               <Button size="icon" variant="outline" onClick={handleStop} aria-label="Остановить">
@@ -199,6 +180,5 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
         </div>
       </SheetContent>
     </Sheet>
-    </>
   )
 }

@@ -9,17 +9,10 @@ const groupSuggestResultSchema = z.object({
 })
 export type GroupSuggestResult = z.infer<typeof groupSuggestResultSchema>
 
-const packResultSchema = z.object({
-  goal: z.string(),
-  stages: z.array(z.object({ title: z.string(), done: z.boolean() })),
-  openQuestions: z.array(z.string()),
-})
-
 const searchHitSchema = z.object({
   noteId: z.string(),
   title: z.string(),
   score: z.number(),
-  projectId: z.string().nullable(),
 })
 
 export type SearchHit = z.infer<typeof searchHitSchema>
@@ -67,13 +60,6 @@ export async function summarizeUrl(url: string): Promise<{ stream: ReadableStrea
   })
   if (!summarizeRes.ok || !summarizeRes.body) throw new Error('Не удалось получить саммари')
   return { stream: summarizeRes.body, title: title || url }
-}
-
-export type ProjectPack = z.infer<typeof packResultSchema>
-
-export async function packIntoProject(dialog: string) {
-  const res = await http.post('/ai/pack-into-project', { dialog })
-  return packResultSchema.parse(res.data)
 }
 
 export function discussNote(
