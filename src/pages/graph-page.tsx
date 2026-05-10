@@ -88,7 +88,7 @@ export function GraphPage() {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b px-6 py-4">
-        <h1 className="text-lg font-semibold">Граф знаний</h1>
+        <h1 className="text-lg font-semibold">Mind map</h1>
         <p className="text-sm text-muted-foreground">Кликните на заметку для перехода</p>
       </div>
       <div className="flex-1">

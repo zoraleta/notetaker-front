@@ -132,7 +132,7 @@ export function AppSidebar({ onCmdK }: AppSidebarProps) {
         <Button variant="ghost" size="sm" className="justify-start gap-2" asChild>
           <Link to="/graph">
             <FileText className="h-4 w-4" />
-            Граф знаний
+            Mind map
           </Link>
         </Button>
         <Button variant="ghost" size="sm" className="justify-start gap-2" asChild>

@@ -92,6 +92,7 @@ export function NoteEditor({ contentJson, onChange, className }: NoteEditorProps
           editor={editor}
           position={slashState.position}
           query={slashState.query}
+          slashPos={slashState.slashPos}
           onClose={closeSlash}
           onLinkCommand={handleLinkCommand}
         />

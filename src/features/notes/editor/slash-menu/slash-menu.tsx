@@ -7,11 +7,12 @@ interface SlashMenuProps {
   editor: Editor
   position: { top: number; left: number }
   query: string
+  slashPos: number
   onClose: () => void
   onLinkCommand: () => void
 }
 
-export function SlashMenu({ editor, position, query, onClose, onLinkCommand }: SlashMenuProps) {
+export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCommand }: SlashMenuProps) {
   const [selectedIdx, setSelectedIdx] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -26,11 +27,15 @@ export function SlashMenu({ editor, position, query, onClose, onLinkCommand }: S
   const onCloseRef = useRef(onClose)
   const onLinkCommandRef = useRef(onLinkCommand)
   const editorRef = useRef(editor)
+  const queryRef = useRef(query)
+  const slashPosRef = useRef(slashPos)
   filteredRef.current = filtered
   selectedIdxRef.current = selectedIdx
   onCloseRef.current = onClose
   onLinkCommandRef.current = onLinkCommand
   editorRef.current = editor
+  queryRef.current = query
+  slashPosRef.current = slashPos
 
   useEffect(() => {
     setSelectedIdx(0)
@@ -49,11 +54,15 @@ export function SlashMenu({ editor, position, query, onClose, onLinkCommand }: S
         e.preventDefault()
         const item = items[selectedIdxRef.current]
         if (item) {
+          const ed = editorRef.current
+          const from = slashPosRef.current
+          const to = from + queryRef.current.length + 1
           onCloseRef.current()
           if (item.id === 'url-summary') {
             onLinkCommandRef.current()
           } else {
-            item.command(editorRef.current)
+            ed.chain().focus().deleteRange({ from, to }).run()
+            item.command(ed)
           }
         }
       } else if (e.key === 'Escape') {
@@ -65,10 +74,13 @@ export function SlashMenu({ editor, position, query, onClose, onLinkCommand }: S
   }, [])
 
   function selectItem(item: (typeof slashItems)[0]) {
+    const from = slashPos
+    const to = from + query.length + 1
     onClose()
     if (item.id === 'url-summary') {
       onLinkCommand()
     } else {
+      editor.chain().focus().deleteRange({ from, to }).run()
       item.command(editor)
     }
   }

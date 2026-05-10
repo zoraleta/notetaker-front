@@ -77,6 +77,47 @@
 /* Tiptap editor styles */
 .tiptap {
   outline: none;
+
+  h1 {
+    @apply text-3xl font-bold mt-6 mb-3 first:mt-0;
+  }
+  h2 {
+    @apply text-2xl font-bold mt-5 mb-2 first:mt-0;
+  }
+  h3 {
+    @apply text-xl font-semibold mt-4 mb-2 first:mt-0;
+  }
+
+  p {
+    @apply my-2 first:mt-0 last:mb-0;
+  }
+
+  ul {
+    @apply list-disc pl-6 my-3;
+  }
+  ol {
+    @apply list-decimal pl-6 my-3;
+  }
+  li {
+    @apply my-1;
+  }
+  li > p {
+    @apply my-0;
+  }
+
+  blockquote {
+    @apply border-l-4 border-border pl-4 italic my-3 text-muted-foreground;
+  }
+
+  pre {
+    @apply bg-muted rounded-md p-4 my-3 overflow-x-auto;
+  }
+  code {
+    @apply font-mono text-sm;
+  }
+  pre code {
+    @apply bg-transparent p-0;
+  }
 }
 
 .tiptap p.is-editor-empty:first-child::before {
