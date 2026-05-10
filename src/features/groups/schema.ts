@@ -6,8 +6,8 @@ export const groupSchema = z.object({
   name: z.string(),
   description: z.string(),
   isDefault: z.boolean(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export const groupsArraySchema = z.array(groupSchema)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import { Sparkles } from 'lucide-react'
 import { slashItems } from './items'
@@ -36,6 +36,22 @@ export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCo
   editorRef.current = editor
   queryRef.current = query
   slashPosRef.current = slashPos
+
+  const [adjustedPos, setAdjustedPos] = useState(position)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    let { top, left } = position
+    if (left + rect.width > vw - 8) left = vw - rect.width - 8
+    if (left < 8) left = 8
+    if (top + rect.height > vh - 8) top = position.top - rect.height - 8
+    if (top < 8) top = 8
+    setAdjustedPos({ top, left })
+  }, [position])
 
   useEffect(() => {
     setSelectedIdx(0)
@@ -99,7 +115,7 @@ export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCo
   return (
     <div
       ref={ref}
-      style={{ top: position.top, left: position.left }}
+      style={{ top: adjustedPos.top, left: adjustedPos.left }}
       className="fixed z-50 w-64 rounded-lg border bg-popover shadow-md max-h-72 overflow-y-auto"
     >
       {groups.map((group) => {

@@ -10,7 +10,7 @@ export const editorExtensions = [
   }),
   Link.configure({
     openOnClick: true,
-    HTMLAttributes: { class: 'underline underline-offset-2 text-primary cursor-pointer' },
+    HTMLAttributes: { class: 'underline underline-offset-2 text-primary cursor-pointer hover:text-muted-foreground transition-colors' },
   }),
   LoadingPlaceholder,
 ]
