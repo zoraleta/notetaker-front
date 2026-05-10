@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import { editorExtensions } from './extensions'
 import { FloatingToolbar } from './floating-menu'
@@ -17,7 +17,12 @@ interface NoteEditorProps {
   className?: string
 }
 
-export function NoteEditor({ contentJson, onChange, className }: NoteEditorProps) {
+export interface NoteEditorHandle {
+  setContent: (text: string) => void
+}
+
+export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(
+  function NoteEditor({ contentJson, onChange, className }, ref) {
   const [slashState, setSlashState] = useState<{
     open: boolean
     position: { top: number; left: number }
@@ -44,6 +49,14 @@ export function NoteEditor({ contentJson, onChange, className }: NoteEditorProps
 
   // Синхронизация не нужна: редактор инициализируется один раз из contentJson,
   // потом является source of truth. Внешние изменения contentJson игнорируются.
+
+  useImperativeHandle(ref, () => ({
+    setContent: (text: string) => {
+      if (!editor) return
+      editor.commands.setContent(text)
+      onChange({ contentJson: editor.getJSON() as Record<string, unknown>, contentText: editor.getText() })
+    },
+  }), [editor, onChange])
 
   const checkSlash = useCallback(
     (ed: NonNullable<typeof editor>) => {
@@ -101,4 +114,4 @@ export function NoteEditor({ contentJson, onChange, className }: NoteEditorProps
       <UrlSummaryDialog editor={editor} open={urlDialogOpen} onOpenChange={setUrlDialogOpen} onCloseSlash={closeSlash} />
     </div>
   )
-}
+})

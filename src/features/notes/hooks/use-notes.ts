@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchNotes, fetchNote, createNote, updateNote, deleteNote, fetchSimilarNotes, notesKeys } from '../api'
+import { fetchNotes, fetchNote, createNote, updateNote, deleteNote, fetchSimilarNotes, mergeNotes, notesKeys } from '../api'
 import type { CreateNoteInput, UpdateNoteInput } from '../schema'
 import type { Note } from '../schema'
 
@@ -63,5 +63,12 @@ export function useSimilarNotes(id: string) {
     queryKey: notesKeys.similar(id),
     queryFn: () => fetchSimilarNotes(id),
     enabled: !!id,
+  })
+}
+
+export function useMergeNotes() {
+  return useMutation({
+    mutationFn: ({ activeNoteId, noteIds }: { activeNoteId: string; noteIds: string[] }) =>
+      mergeNotes(activeNoteId, noteIds),
   })
 }

@@ -43,3 +43,8 @@ export async function fetchSimilarNotes(id: string) {
   const res = await http.get(`/notes/${id}/similar`)
   return similarNoteHitsArraySchema.parse(res.data)
 }
+
+export async function mergeNotes(activeNoteId: string, noteIds: string[]): Promise<string> {
+  const res = await http.post('/ai/merge', { activeNoteId, noteIds })
+  return z.string().parse(res.data)
+}

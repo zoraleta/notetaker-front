@@ -1,13 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Sparkles, Trash2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { NoteEditor } from '@/features/notes/editor/editor'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { NoteEditor, type NoteEditorHandle } from '@/features/notes/editor/editor'
 import { DiscussSheet } from '@/features/ai/components/discuss-sheet'
 import { SimilarNotes } from '@/features/notes/components/similar-notes'
 import { GroupSuggestions } from '@/features/notes/components/group-suggestions'
 import { useNote, useUpdateNote, useDeleteNote } from '@/features/notes/hooks/use-notes'
+import { createNote, deleteNote as deleteNoteApi, notesKeys } from '@/features/notes/api'
+import { markdownToTiptapJson } from '@/lib/markdown-to-tiptap'
 import { useDebounce } from '@/hooks/use-debounce'
 
 function EditorSkeleton() {
@@ -31,10 +42,12 @@ export function NoteEditorPage() {
 
 function NoteEditorPageInner({ id }: { id: string }) {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { data: note, isLoading, isError } = useNote(id)
   const updateNote = useUpdateNote(id)
   const deleteNote = useDeleteNote()
   const [discussOpen, setDiscussOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle')
   const [editorContent, setEditorContent] = useState<{ contentJson: Record<string, unknown>; contentText: string } | null>(null)
   const debouncedContent = useDebounce(editorContent, 1500)
@@ -45,6 +58,16 @@ function NoteEditorPageInner({ id }: { id: string }) {
   noteRef.current = note
   const updateNoteRef = useRef(updateNote)
   updateNoteRef.current = updateNote
+  const editorRef = useRef<NoteEditorHandle>(null)
+
+  const handleMergeComplete = useCallback(async (mergedText: string, selectedNoteIds: string[]) => {
+    const contentJson = markdownToTiptapJson(mergedText)
+    const title = extractTitle(mergedText) || 'Объединённая заметка'
+    const newNote = await createNote({ title, contentJson, contentText: mergedText })
+    await Promise.all([id, ...selectedNoteIds].map((noteId) => deleteNoteApi(noteId)))
+    await qc.invalidateQueries({ queryKey: notesKeys.lists() })
+    navigate(`/notes/${newNote.id}`, { replace: true })
+  }, [id, navigate, qc])
 
   const save = useCallback(async (update: { contentJson: Record<string, unknown>; contentText: string }) => {
     if (!noteRef.current) return
@@ -60,8 +83,7 @@ function NoteEditorPageInner({ id }: { id: string }) {
     save(debouncedContent)
   }, [debouncedContent, save])
 
-  async function handleDelete() {
-    if (!window.confirm('Удалить заметку?')) return
+  async function handleDeleteConfirm() {
     await deleteNote.mutateAsync(id)
     navigate('/dashboard')
   }
@@ -85,7 +107,7 @@ function NoteEditorPageInner({ id }: { id: string }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleDelete}
+            onClick={() => setDeleteOpen(true)}
             disabled={deleteNote.isPending}
             aria-label="Удалить заметку"
           >
@@ -96,6 +118,7 @@ function NoteEditorPageInner({ id }: { id: string }) {
         <div className="flex-1 overflow-auto">
           <div className="mx-auto max-w-3xl px-6 py-8">
             <NoteEditor
+              ref={editorRef}
               contentJson={note.contentJson}
               onChange={(update) => {
                 initialLoad.current = false
@@ -112,15 +135,36 @@ function NoteEditorPageInner({ id }: { id: string }) {
           noteText={debouncedContent?.contentText ?? note.contentText}
           currentGroupId={note.groupId}
         />
-        <SimilarNotes noteId={id} />
+        <SimilarNotes noteId={id} onMergeComplete={handleMergeComplete} />
       </aside>
 
       <DiscussSheet note={note} open={discussOpen} onOpenChange={setDiscussOpen} />
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Удалить заметку?</DialogTitle>
+            <DialogDescription>Это действие нельзя отменить.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteNote.isPending}
+            >
+              Удалить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
 function extractTitle(text: string): string {
   const firstLine = text.split('\n').find((line) => line.trim().length > 0) ?? ''
-  return firstLine.trim().slice(0, 80)
+  return firstLine.trim().replace(/^#+\s*/, '').slice(0, 80)
 }
