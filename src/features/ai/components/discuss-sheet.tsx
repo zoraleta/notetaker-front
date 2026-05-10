@@ -39,16 +39,15 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
     if (!input.trim() || isStreaming) return
     const userMsg = input.trim()
     setInput('')
-    setMessages((prev) => [...prev, { role: 'user', content: userMsg }])
+    const updatedMessages: Message[] = [...messages, { role: 'user', content: userMsg }]
+    setMessages([...updatedMessages, { role: 'assistant', content: '' }])
     setIsStreaming(true)
 
     const ac = new AbortController()
     abortRef.current = ac
 
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-
     try {
-      const res = await discussNote(note.id, userMsg, ac.signal)
+      const res = await discussNote(note.id, updatedMessages, ac.signal)
       if (!res.ok || !res.body) throw new Error('Ошибка')
 
       const reader = res.body.getReader()

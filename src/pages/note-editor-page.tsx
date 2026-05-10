@@ -31,18 +31,21 @@ export function NoteEditorPage() {
   const [editorContent, setEditorContent] = useState<{ contentJson: Record<string, unknown>; contentText: string } | null>(null)
   const debouncedContent = useDebounce(editorContent, 1500)
   const initialLoad = useRef(true)
+  // Refs для стабильного save — чтобы useCallback не пересоздавался при каждом
+  // изменении note/updateNote и не вызывал бесконечный цикл сохранений.
+  const noteRef = useRef(note)
+  noteRef.current = note
+  const updateNoteRef = useRef(updateNote)
+  updateNoteRef.current = updateNote
 
-  const save = useCallback(
-    async (update: { contentJson: Record<string, unknown>; contentText: string }) => {
-      if (!note) return
-      setSaveStatus('saving')
-      const title = extractTitle(update.contentText) || 'Без названия'
-      await updateNote.mutateAsync({ contentJson: update.contentJson, contentText: update.contentText, title })
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2000)
-    },
-    [note, updateNote],
-  )
+  const save = useCallback(async (update: { contentJson: Record<string, unknown>; contentText: string }) => {
+    if (!noteRef.current) return
+    setSaveStatus('saving')
+    const title = extractTitle(update.contentText) || 'Без названия'
+    await updateNoteRef.current.mutateAsync({ contentJson: update.contentJson, contentText: update.contentText, title })
+    setSaveStatus('saved')
+    setTimeout(() => setSaveStatus('idle'), 2000)
+  }, [])
 
   useEffect(() => {
     if (!debouncedContent || initialLoad.current) return

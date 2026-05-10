@@ -29,8 +29,8 @@ export function useUpdateNote(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: UpdateNoteInput) => updateNote(id, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: notesKeys.detail(id) })
+    onSuccess: (updatedNote) => {
+      qc.setQueryData(notesKeys.detail(id), updatedNote)
       qc.invalidateQueries({ queryKey: notesKeys.lists() })
     },
   })

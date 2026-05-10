@@ -33,8 +33,10 @@ export function AppSidebar({ onCmdK }: AppSidebarProps) {
     navigate('/login')
   }
 
+  const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] }
+
   async function handleNewNote() {
-    const note = await createNote.mutateAsync({ title: 'Новая заметка', content: '' })
+    const note = await createNote.mutateAsync({ title: 'Новая заметка', contentJson: EMPTY_DOC, contentText: '' })
     navigate(`/notes/${note.id}`)
   }
 

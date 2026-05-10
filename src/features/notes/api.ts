@@ -1,6 +1,11 @@
+import { z } from 'zod'
 import { http } from '@/lib/http'
 import { noteSchema, notesArraySchema } from './schema'
 import type { CreateNoteInput, UpdateNoteInput } from './schema'
+
+const similarNoteHitSchema = z.object({ id: z.string(), title: z.string(), score: z.number() })
+const similarNoteHitsArraySchema = z.array(similarNoteHitSchema)
+export type SimilarNoteHit = z.infer<typeof similarNoteHitSchema>
 
 export const notesKeys = {
   all: ['notes'] as const,
@@ -36,5 +41,5 @@ export async function deleteNote(id: string) {
 
 export async function fetchSimilarNotes(id: string) {
   const res = await http.get(`/notes/${id}/similar`)
-  return notesArraySchema.parse(res.data)
+  return similarNoteHitsArraySchema.parse(res.data)
 }

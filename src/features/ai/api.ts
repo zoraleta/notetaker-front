@@ -48,10 +48,14 @@ export async function packIntoProject(noteId: string) {
   return packResultSchema.parse(res.data)
 }
 
-export function discussNote(noteId: string, message: string, signal?: AbortSignal): Promise<Response> {
-  return authFetch(`/notes/${noteId}/discuss`, {
+export function discussNote(
+  noteId: string,
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  signal?: AbortSignal,
+): Promise<Response> {
+  return authFetch('/ai/discuss', {
     method: 'POST',
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ noteId, messages }),
     signal,
   })
 }
