@@ -21,7 +21,14 @@ export async function deleteProject(id: string) {
   await http.delete(`/projects/${id}`)
 }
 
-export async function createProjectFromPack(data: { name: string; description: string; noteIds: string[] }) {
+export interface CreateProjectFromPackInput {
+  name: string
+  description?: string
+  pack: { goal?: string; stages?: { title: string; done: boolean }[]; openQuestions?: string[] }
+  sourceNoteIds: string[]
+}
+
+export async function createProjectFromPack(data: CreateProjectFromPackInput) {
   const res = await http.post('/projects/from-pack', data)
   return projectSchema.parse(res.data)
 }

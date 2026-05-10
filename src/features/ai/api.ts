@@ -2,10 +2,17 @@ import { http } from '@/lib/http'
 import { z } from 'zod'
 import { getToken } from '@/features/auth/api'
 
+const groupSuggestionSchema = z.object({ groupId: z.string(), score: z.number() })
+const groupSuggestResultSchema = z.object({
+  suggestions: z.array(groupSuggestionSchema),
+  emptyGroupIds: z.array(z.string()),
+})
+export type GroupSuggestResult = z.infer<typeof groupSuggestResultSchema>
+
 const packResultSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  noteIds: z.array(z.string()),
+  goal: z.string(),
+  stages: z.array(z.object({ title: z.string(), done: z.boolean() })),
+  openQuestions: z.array(z.string()),
 })
 
 const searchHitSchema = z.object({
@@ -33,6 +40,11 @@ function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   })
 }
 
+export async function suggestGroups(noteText: string): Promise<GroupSuggestResult> {
+  const res = await http.post('/ai/suggest-group', { noteText })
+  return groupSuggestResultSchema.parse(res.data)
+}
+
 export async function semanticSearch(query: string): Promise<SearchHit[]> {
   const res = await http.post('/ai/search', { query })
   return z.array(searchHitSchema).parse(res.data)
@@ -57,8 +69,10 @@ export async function summarizeUrl(url: string): Promise<{ stream: ReadableStrea
   return { stream: summarizeRes.body, title: title || url }
 }
 
-export async function packIntoProject(noteId: string) {
-  const res = await http.post('/ai/pack-into-project', { noteId })
+export type ProjectPack = z.infer<typeof packResultSchema>
+
+export async function packIntoProject(dialog: string) {
+  const res = await http.post('/ai/pack-into-project', { dialog })
   return packResultSchema.parse(res.data)
 }
 

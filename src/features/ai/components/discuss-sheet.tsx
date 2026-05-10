@@ -52,34 +52,40 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
+      let buffer = ''
+
+      const processLine = (line: string) => {
+        if (!line.startsWith('data: ')) return
+        const data = line.slice(6)
+        if (data === '[DONE]') return
+        try {
+          const parsed = JSON.parse(data) as { response?: string }
+          if (parsed.response) {
+            setMessages((prev) => {
+              const updated = [...prev]
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                content: updated[updated.length - 1].content + parsed.response,
+              }
+              return updated
+            })
+          }
+        } catch {
+          // игнорируем невалидный чанк
+        }
+      }
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6)
-            if (data === '[DONE]') break
-            try {
-              const parsed = JSON.parse(data) as { response?: string }
-              if (parsed.response) {
-                setMessages((prev) => {
-                  const updated = [...prev]
-                  updated[updated.length - 1] = {
-                    ...updated[updated.length - 1],
-                    content: updated[updated.length - 1].content + parsed.response,
-                  }
-                  return updated
-                })
-              }
-            } catch {
-              // игнорируем невалидный чанк
-            }
-          }
+          processLine(line)
         }
       }
+      if (buffer) processLine(buffer)
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         setMessages((prev) => {
@@ -101,8 +107,17 @@ export function DiscussSheet({ note, open, onOpenChange }: DiscussSheetProps) {
   async function handlePack() {
     setPacking(true)
     try {
-      const pack = await packIntoProject(note.id)
-      await createProject.mutateAsync(pack)
+      const noteContext = `Заметка: "${note.title}"\n${note.contentText}`
+      const dialogLines = messages.map((m) =>
+        `${m.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${m.content}`,
+      )
+      const dialog = [noteContext, ...dialogLines].join('\n\n')
+      const pack = await packIntoProject(dialog)
+      await createProject.mutateAsync({
+        name: pack.goal,
+        pack: { goal: pack.goal, stages: pack.stages, openQuestions: pack.openQuestions },
+        sourceNoteIds: [note.id],
+      })
     } finally {
       setPacking(false)
     }

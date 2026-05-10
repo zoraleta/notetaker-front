@@ -6,6 +6,7 @@ export const noteSchema = z.object({
   contentJson: z.unknown(),
   contentText: z.string(),
   projectId: z.string().nullable(),
+  groupId: z.string().nullable(),
   tags: z.array(z.string()),
   isIndexedAt: z.string().nullable(),
   createdAt: z.string(),
@@ -27,6 +28,7 @@ export const updateNoteSchema = z.object({
   contentJson: z.record(z.unknown()).optional(),
   contentText: z.string().optional(),
   projectId: z.string().nullable().optional(),
+  groupId: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
 })
 

@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { NoteEditor } from '@/features/notes/editor/editor'
 import { DiscussSheet } from '@/features/ai/components/discuss-sheet'
 import { SimilarNotes } from '@/features/notes/components/similar-notes'
+import { GroupSuggestions } from '@/features/notes/components/group-suggestions'
 import { useNote, useUpdateNote, useDeleteNote } from '@/features/notes/hooks/use-notes'
 import { useDebounce } from '@/hooks/use-debounce'
 
@@ -99,6 +100,11 @@ export function NoteEditorPage() {
       </div>
 
       <aside className="hidden w-64 shrink-0 overflow-auto border-l lg:block">
+        <GroupSuggestions
+          noteId={id!}
+          noteText={debouncedContent?.contentText ?? note.contentText}
+          currentGroupId={note.groupId}
+        />
         <SimilarNotes noteId={id!} />
       </aside>
 
