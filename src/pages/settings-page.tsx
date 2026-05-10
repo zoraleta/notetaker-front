@@ -6,6 +6,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useSettings, useUpdateModel, useUpdatePrompt } from '@/features/settings/hooks/use-settings'
 import { ALLOWED_MODELS } from '@/features/settings/schema'
 
+const PROMPT_DESCRIPTIONS: Record<string, string> = {
+  summarize: 'Краткое резюме заметки или статьи с ключевыми тезисами.',
+  discuss: 'Диалог об идее пользователя с опорой на контекст из других его заметок.',
+  'pack-into-project': 'По итогам диалога формирует структуру проекта: цель, этапы, открытые вопросы.',
+}
+
 export function SettingsPage() {
   const { data: settings, isLoading, isError } = useSettings()
   const updateModel = useUpdateModel()
@@ -71,17 +77,20 @@ export function SettingsPage() {
             <h2 className="text-sm font-medium">Промпты</h2>
             {Object.entries(settings.prompts).map(([key, value]) => (
               <div key={key} className="space-y-1">
-                <label className="text-xs text-muted-foreground">{key}</label>
+                <label className="text-xs font-medium">{key}</label>
+                {PROMPT_DESCRIPTIONS[key] && (
+                  <p className="text-xs text-muted-foreground">{PROMPT_DESCRIPTIONS[key]}</p>
+                )}
                 <textarea
                   className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring"
                   rows={4}
-                  defaultValue={value}
+                  defaultValue={value.effective}
                   onChange={(e) => setPromptEdits((p) => ({ ...p, [key]: e.target.value }))}
                 />
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={!promptEdits[key] || promptEdits[key] === value || updatePrompt.isPending}
+                  disabled={!promptEdits[key] || promptEdits[key] === value.effective || updatePrompt.isPending}
                   onClick={() => handleSavePrompt(key)}
                   className="gap-1"
                 >

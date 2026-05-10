@@ -11,7 +11,7 @@ export async function fetchSettings() {
 }
 
 export async function updateModel(model: string) {
-  await http.put('/settings/model', { model })
+  await http.put('/settings/active-model', { model })
 }
 
 export async function updatePrompt(key: string, value: string) {

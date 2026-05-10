@@ -1,6 +1,5 @@
 import { http } from '@/lib/http'
 import { z } from 'zod'
-import { notesArraySchema } from '@/features/notes/schema'
 import { getToken } from '@/features/auth/api'
 
 const packResultSchema = z.object({
@@ -9,9 +8,14 @@ const packResultSchema = z.object({
   noteIds: z.array(z.string()),
 })
 
-const searchResultSchema = z.object({
-  notes: notesArraySchema,
+const searchHitSchema = z.object({
+  noteId: z.string(),
+  title: z.string(),
+  score: z.number(),
+  projectId: z.string().nullable(),
 })
+
+export type SearchHit = z.infer<typeof searchHitSchema>
 
 export const aiKeys = {
   search: (q: string) => ['ai', 'search', q] as const,
@@ -29,9 +33,9 @@ function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   })
 }
 
-export async function semanticSearch(q: string) {
-  const res = await http.get('/notes/search', { params: { q } })
-  return searchResultSchema.parse(res.data).notes
+export async function semanticSearch(query: string): Promise<SearchHit[]> {
+  const res = await http.post('/ai/search', { query })
+  return z.array(searchHitSchema).parse(res.data)
 }
 
 export async function summarizeUrl(url: string): Promise<ReadableStream<Uint8Array>> {

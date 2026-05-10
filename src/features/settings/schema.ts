@@ -1,9 +1,17 @@
 import { z } from 'zod'
 
+const promptViewSchema = z.object({
+  default: z.string(),
+  override: z.string().nullable(),
+  effective: z.string(),
+})
+
 export const settingsSchema = z.object({
   activeModel: z.string(),
+  allowedModels: z.array(z.string()),
   embeddingModel: z.string(),
-  prompts: z.record(z.string()),
+  embeddingDimensions: z.number(),
+  prompts: z.record(promptViewSchema),
 })
 
 export type Settings = z.infer<typeof settingsSchema>
