@@ -23,9 +23,16 @@ function EditorSkeleton() {
 
 export function NoteEditorPage() {
   const { id } = useParams<{ id: string }>()
+  // key={id} форсирует полный remount при переходе между заметками
+  // (например, клик в SimilarNotes), иначе tiptap-редактор и локальный state
+  // страницы остаются от предыдущей заметки и могут перезаписать новую.
+  return <NoteEditorPageInner key={id} id={id!} />
+}
+
+function NoteEditorPageInner({ id }: { id: string }) {
   const navigate = useNavigate()
-  const { data: note, isLoading, isError } = useNote(id!)
-  const updateNote = useUpdateNote(id!)
+  const { data: note, isLoading, isError } = useNote(id)
+  const updateNote = useUpdateNote(id)
   const deleteNote = useDeleteNote()
   const [discussOpen, setDiscussOpen] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle')
@@ -55,7 +62,7 @@ export function NoteEditorPage() {
 
   async function handleDelete() {
     if (!window.confirm('Удалить заметку?')) return
-    await deleteNote.mutateAsync(id!)
+    await deleteNote.mutateAsync(id)
     navigate('/dashboard')
   }
 
@@ -101,11 +108,11 @@ export function NoteEditorPage() {
 
       <aside className="hidden w-64 shrink-0 overflow-auto border-l lg:block">
         <GroupSuggestions
-          noteId={id!}
+          noteId={id}
           noteText={debouncedContent?.contentText ?? note.contentText}
           currentGroupId={note.groupId}
         />
-        <SimilarNotes noteId={id!} />
+        <SimilarNotes noteId={id} />
       </aside>
 
       <DiscussSheet note={note} open={discussOpen} onOpenChange={setDiscussOpen} />
