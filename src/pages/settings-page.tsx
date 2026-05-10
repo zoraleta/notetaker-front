@@ -19,8 +19,9 @@ export function SettingsPage() {
   const [promptEdits, setPromptEdits] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set())
 
-  async function handleSavePrompt(key: string) {
-    await updatePrompt.mutateAsync({ key, value: promptEdits[key] })
+  function handleSavePrompt(key: string) {
+    updatePrompt.mutate({ key, value: promptEdits[key] })
+    setPromptEdits((p) => { const n = { ...p }; delete n[key]; return n })
     setSavedKeys((s) => new Set([...s, key]))
     setTimeout(() => setSavedKeys((s) => { const n = new Set(s); n.delete(key); return n }), 2000)
   }

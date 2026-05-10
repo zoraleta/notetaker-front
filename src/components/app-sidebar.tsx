@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Plus, FileText, FolderOpen, Settings, LogOut, Moon, Sun, Search } from 'lucide-react'
+import { Plus, FileText, FolderOpen, Settings, LogOut, Moon, Sun, Search, NotebookPen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -43,7 +43,10 @@ export function AppSidebar({ onCmdK }: AppSidebarProps) {
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar">
       <div className="flex items-center justify-between p-4">
-        <span className="font-semibold text-sidebar-foreground">Notetaker</span>
+        <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-sidebar-foreground hover:opacity-80 transition-opacity">
+          <NotebookPen className="h-4 w-4 text-foreground" />
+          Notetaker
+        </Link>
         <Button variant="ghost" size="icon" onClick={toggleDark} aria-label="Переключить тему">
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
