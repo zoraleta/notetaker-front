@@ -1,0 +1,40 @@
+import { http } from '@/lib/http'
+import { noteSchema, notesArraySchema } from './schema'
+import type { CreateNoteInput, UpdateNoteInput } from './schema'
+
+export const notesKeys = {
+  all: ['notes'] as const,
+  lists: () => [...notesKeys.all, 'list'] as const,
+  list: (q?: string) => [...notesKeys.lists(), q ?? null] as const,
+  detail: (id: string) => [...notesKeys.all, 'detail', id] as const,
+  similar: (id: string) => [...notesKeys.all, 'similar', id] as const,
+}
+
+export async function fetchNotes(q?: string) {
+  const res = await http.get('/notes', { params: q ? { q } : undefined })
+  return notesArraySchema.parse(res.data)
+}
+
+export async function fetchNote(id: string) {
+  const res = await http.get(`/notes/${id}`)
+  return noteSchema.parse(res.data)
+}
+
+export async function createNote(data: CreateNoteInput) {
+  const res = await http.post('/notes', data)
+  return noteSchema.parse(res.data)
+}
+
+export async function updateNote(id: string, data: UpdateNoteInput) {
+  const res = await http.patch(`/notes/${id}`, data)
+  return noteSchema.parse(res.data)
+}
+
+export async function deleteNote(id: string) {
+  await http.delete(`/notes/${id}`)
+}
+
+export async function fetchSimilarNotes(id: string) {
+  const res = await http.get(`/notes/${id}/similar`)
+  return notesArraySchema.parse(res.data)
+}
