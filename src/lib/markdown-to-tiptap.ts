@@ -10,6 +10,12 @@ export function markdownToTiptapJson(md: string): Record<string, unknown> {
   while (i < lines.length) {
     const line = lines[i]
 
+    if (line.startsWith('#### ')) {
+      content.push({ type: 'heading', attrs: { level: 4 }, content: parseInline(line.slice(5)) })
+      i++
+      continue
+    }
+
     if (line.startsWith('### ')) {
       content.push({ type: 'heading', attrs: { level: 3 }, content: parseInline(line.slice(4)) })
       i++
@@ -33,7 +39,7 @@ export function markdownToTiptapJson(md: string): Record<string, unknown> {
       while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
         items.push({
           type: 'listItem',
-          content: [{ type: 'paragraph', content: parseInline(lines[i].slice(2)) }],
+          content: [{ type: 'paragraph', content: parseInline(lines[i].replace(/^[-*]\s+/, '')) }],
         })
         i++
       }

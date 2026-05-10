@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { Sparkles, Trash2, ArrowLeft } from 'lucide-react'
+import { Sparkles, MessagesSquare, Loader2, Trash2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -20,6 +20,7 @@ import { useNote, useUpdateNote, useDeleteNote } from '@/features/notes/hooks/us
 import { createNote, deleteNote as deleteNoteApi, notesKeys } from '@/features/notes/api'
 import { markdownToTiptapJson } from '@/lib/markdown-to-tiptap'
 import { useDebounce } from '@/hooks/use-debounce'
+import { structurizeNote } from '@/features/ai/api'
 
 function EditorSkeleton() {
   return (
@@ -48,6 +49,8 @@ function NoteEditorPageInner({ id }: { id: string }) {
   const deleteNote = useDeleteNote()
   const [discussOpen, setDiscussOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [isStructurizing, setIsStructurizing] = useState(false)
+  const [structurizeError, setStructurizeError] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle')
   const [editorContent, setEditorContent] = useState<{ contentJson: Record<string, unknown>; contentText: string } | null>(null)
   const debouncedContent = useDebounce(editorContent, 1500)
@@ -83,6 +86,22 @@ function NoteEditorPageInner({ id }: { id: string }) {
     save(debouncedContent)
   }, [debouncedContent, save])
 
+  async function handleStructurize() {
+    const text = editorContent?.contentText ?? note?.contentText ?? ''
+    if (!text.trim()) return
+    setIsStructurizing(true)
+    setStructurizeError(false)
+    try {
+      const structured = await structurizeNote(text)
+      editorRef.current?.setContent(structured)
+    } catch {
+      setStructurizeError(true)
+      setTimeout(() => setStructurizeError(false), 3000)
+    } finally {
+      setIsStructurizing(false)
+    }
+  }
+
   async function handleDeleteConfirm() {
     await deleteNote.mutateAsync(id)
     navigate('/dashboard')
@@ -101,8 +120,12 @@ function NoteEditorPageInner({ id }: { id: string }) {
           <div className="flex-1" />
           {saveStatus === 'saving' && <span className="text-xs text-muted-foreground">Сохраняем...</span>}
           {saveStatus === 'saved' && <span className="text-xs text-muted-foreground">Сохранено</span>}
-          <Button variant="ghost" size="icon" onClick={() => setDiscussOpen(true)} aria-label="Обсудить с AI">
-            <Sparkles className="h-4 w-4" />
+          {structurizeError && <span className="text-xs text-destructive">Ошибка структурирования</span>}
+          <Button variant="ghost" size="icon" onClick={handleStructurize} disabled={isStructurizing} aria-label="Структурировать текст">
+            {isStructurizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setDiscussOpen(true)} aria-label="Обсудить заметку">
+            <MessagesSquare className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"

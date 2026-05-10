@@ -53,9 +53,12 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(
   // потом является source of truth. Внешние изменения contentJson игнорируются.
 
   useImperativeHandle(ref, () => ({
-    setContent: (text: string) => {
+    setContent: (markdown: string) => {
       if (!editor) return
-      editor.commands.setContent(text)
+      const json = markdownToTiptapJson(markdown)
+      skipOnUpdate.current = true
+      editor.chain().setContent(json).run()
+      skipOnUpdate.current = false
       onChange({ contentJson: editor.getJSON() as Record<string, unknown>, contentText: editor.getText() })
     },
     appendMarkdown: (markdown: string) => {

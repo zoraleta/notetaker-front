@@ -84,3 +84,8 @@ export function formatForNote(
     signal,
   })
 }
+
+export async function structurizeNote(text: string): Promise<string> {
+  const res = await http.post<{ structured: string }>('/ai/structurize', { text })
+  return res.data.structured
+}
