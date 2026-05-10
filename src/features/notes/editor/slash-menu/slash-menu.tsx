@@ -42,6 +42,13 @@ export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCo
   }, [query])
 
   useEffect(() => {
+    const container = ref.current
+    if (!container) return
+    const active = container.querySelector<HTMLElement>('.bg-accent')
+    active?.scrollIntoView({ block: 'nearest' })
+  }, [selectedIdx])
+
+  useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       const items = filteredRef.current
       if (e.key === 'ArrowDown') {
@@ -69,8 +76,8 @@ export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCo
         onCloseRef.current()
       }
     }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
+    document.addEventListener('keydown', handleKey, { capture: true })
+    return () => document.removeEventListener('keydown', handleKey, { capture: true })
   }, [])
 
   function selectItem(item: (typeof slashItems)[0]) {
@@ -93,7 +100,7 @@ export function SlashMenu({ editor, position, query, slashPos, onClose, onLinkCo
     <div
       ref={ref}
       style={{ top: position.top, left: position.left }}
-      className="fixed z-50 w-64 rounded-lg border bg-popover shadow-md"
+      className="fixed z-50 w-64 rounded-lg border bg-popover shadow-md max-h-72 overflow-y-auto"
     >
       {groups.map((group) => {
         const items = filtered.filter((i) => i.group === group)

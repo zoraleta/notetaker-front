@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Plus, FileText, FolderOpen, Settings, LogOut, Moon, Sun, Search, NotebookPen } from 'lucide-react'
+import { Plus, FileText, FolderOpen, Layers, Settings, LogOut, Moon, Sun, Search, NotebookPen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -129,6 +129,12 @@ export function AppSidebar({ onCmdK }: AppSidebarProps) {
       <Separator />
 
       <div className="flex flex-col gap-0.5 p-3">
+        <Button variant="ghost" size="sm" className="justify-start gap-2" asChild>
+          <Link to="/groups">
+            <Layers className="h-4 w-4" />
+            Группы
+          </Link>
+        </Button>
         <Button variant="ghost" size="sm" className="justify-start gap-2" asChild>
           <Link to="/graph">
             <FileText className="h-4 w-4" />

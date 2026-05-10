@@ -98,7 +98,7 @@ export function NoteEditor({ contentJson, onChange, className }: NoteEditorProps
         />
       )}
 
-      <UrlSummaryDialog editor={editor} open={urlDialogOpen} onOpenChange={setUrlDialogOpen} />
+      <UrlSummaryDialog editor={editor} open={urlDialogOpen} onOpenChange={setUrlDialogOpen} onCloseSlash={closeSlash} />
     </div>
   )
 }

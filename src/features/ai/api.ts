@@ -38,13 +38,23 @@ export async function semanticSearch(query: string): Promise<SearchHit[]> {
   return z.array(searchHitSchema).parse(res.data)
 }
 
-export async function summarizeUrl(url: string): Promise<ReadableStream<Uint8Array>> {
-  const response = await authFetch('/links/summarize', {
+export async function summarizeUrl(url: string): Promise<{ stream: ReadableStream<Uint8Array>; title: string }> {
+  const parseRes = await authFetch('/links/parse', {
     method: 'POST',
     body: JSON.stringify({ url }),
   })
-  if (!response.ok || !response.body) throw new Error('Не удалось получить саммари')
-  return response.body
+  if (!parseRes.ok) {
+    const body = await parseRes.json() as { error?: string }
+    throw new Error(body.error ?? 'Не удалось загрузить страницу')
+  }
+  const { content, title } = await parseRes.json() as { content: string; title: string }
+
+  const summarizeRes = await authFetch('/ai/summarize', {
+    method: 'POST',
+    body: JSON.stringify({ text: content }),
+  })
+  if (!summarizeRes.ok || !summarizeRes.body) throw new Error('Не удалось получить саммари')
+  return { stream: summarizeRes.body, title: title || url }
 }
 
 export async function packIntoProject(noteId: string) {

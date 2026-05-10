@@ -6,6 +6,7 @@ import { DashboardPage } from '@/pages/dashboard-page'
 import { NoteEditorPage } from '@/pages/note-editor-page'
 import { SettingsPage } from '@/pages/settings-page'
 import { GraphPage } from '@/pages/graph-page'
+import { GroupsPage } from '@/pages/groups-page'
 import { hasAuthToken } from '@/features/auth/api'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'notes/:id', element: <NoteEditorPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'graph', element: <GraphPage /> },
+      { path: 'groups', element: <GroupsPage /> },
     ],
   },
 ])
