@@ -3,7 +3,7 @@ import type { Editor } from '@tiptap/react'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { summarizeUrl } from '@/features/ai/api'
 
 interface UrlSummaryDialogProps {
@@ -127,6 +127,9 @@ export function UrlSummaryDialog({ editor, open, onOpenChange, onCloseSlash }: U
             <Sparkles className="h-4 w-4" />
             Саммари по ссылке
           </DialogTitle>
+          <DialogDescription>
+            Вставьте ссылку — AI добавит краткое саммари в заметку.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           <Input
