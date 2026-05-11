@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, type UseEditorOptions } from '@tiptap/react'
 import { editorExtensions } from './extensions'
 import { FloatingToolbar } from './floating-menu'
 import { SlashMenu } from './slash-menu/slash-menu'
@@ -36,7 +36,7 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(
 
   const editor = useEditor({
     extensions: editorExtensions,
-    content: contentJson as Parameters<typeof useEditor>[0]['content'],
+    content: contentJson as UseEditorOptions['content'],
     onUpdate({ editor }) {
       if (skipOnUpdate.current) return
       onChange({ contentJson: editor.getJSON() as Record<string, unknown>, contentText: editor.getText() })
