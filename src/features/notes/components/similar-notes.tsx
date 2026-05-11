@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FileText, Merge } from 'lucide-react'
+import { FileText, Merge, RefreshCw } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { useSimilarNotes, useMergeNotes } from '@/features/notes/hooks/use-notes'
@@ -12,7 +12,7 @@ interface SimilarNotesProps {
 
 export function SimilarNotes({ noteId, onMergeComplete }: SimilarNotesProps) {
   const navigate = useNavigate()
-  const { data: notes, isLoading } = useSimilarNotes(noteId)
+  const { data: notes, isLoading, refetch, isFetching } = useSimilarNotes(noteId)
   const mergeMutation = useMergeNotes()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [mergeError, setMergeError] = useState<string | null>(null)
@@ -43,7 +43,20 @@ export function SimilarNotes({ noteId, onMergeComplete }: SimilarNotesProps) {
 
   return (
     <div className="p-4">
-      <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Похожие</h3>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Похожие</h3>
+          <p className="text-[10px] text-muted-foreground/60">Новые заметки проанализируются примерно через минуту</p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          title="Обновить"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
       {isLoading && (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (

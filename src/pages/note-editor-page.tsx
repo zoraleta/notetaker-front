@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Sparkles, MessagesSquare, Loader2, Trash2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Dialog,
   DialogContent,
@@ -121,21 +122,38 @@ function NoteEditorPageInner({ id }: { id: string }) {
           {saveStatus === 'saving' && <span className="text-xs text-muted-foreground">Сохраняем...</span>}
           {saveStatus === 'saved' && <span className="text-xs text-muted-foreground">Сохранено</span>}
           {structurizeError && <span className="text-xs text-destructive">Ошибка структурирования</span>}
-          <Button variant="ghost" size="icon" onClick={handleStructurize} disabled={isStructurizing} aria-label="Структурировать текст">
-            {isStructurizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDiscussOpen(true)} aria-label="Обсудить заметку">
-            <MessagesSquare className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeleteOpen(true)}
-            disabled={deleteNote.isPending}
-            aria-label="Удалить заметку"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <TooltipProvider delayDuration={400}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={handleStructurize} disabled={isStructurizing} aria-label="Структурировать текст">
+                  {isStructurizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Структурировать заметку</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => setDiscussOpen(true)} aria-label="Обсудить заметку">
+                  <MessagesSquare className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Обсудить с AI</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDeleteOpen(true)}
+                  disabled={deleteNote.isPending}
+                  aria-label="Удалить заметку"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Удалить заметку</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div className="flex-1 overflow-auto">
